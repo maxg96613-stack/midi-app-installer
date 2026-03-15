@@ -1,6 +1,6 @@
-# -----------------------------------------
-# setup_full.ps1 — Full MIDI App Builder
-# -----------------------------------------
+# ---------------------------------------------------------
+# FULL MIDI APP INSTALLER (UI + AUDIO→MIDI + ALL FEATURES)
+# ---------------------------------------------------------
 
 Write-Host "FULL MIDI APP SETUP STARTING..." -ForegroundColor Cyan
 
@@ -514,23 +514,5 @@ Write-Host "Python files written." -ForegroundColor Green
 
 $EnvPath = Join-Path $ProjectDir "env"
 
-if (Test-Path $EnvPath)) {
-    Write-Host "Removing old virtual environment..." -ForegroundColor Yellow
-    Remove-Item $EnvPath -Recurse -Force
-}
-
-Write-Host "Creating virtual environment..." -ForegroundColor Green
-python -m venv $EnvPath
-
-Write-Host "Activating virtual environment..." -ForegroundColor Green
-& (Join-Path $EnvPath "Scripts\Activate.ps1")
-
-Write-Host "Installing dependencies (this may take a while)..." -ForegroundColor Green
-pip install --upgrade pip
-pip install customtkinter pillow cryptography==41.0.7 basic-pitch mido pytesseract
-
-Write-Host "FULL SETUP COMPLETE." -ForegroundColor Green
-Write-Host "To run the app:" -ForegroundColor Cyan
-Write-Host "  cd `"$ProjectDir`"" -ForegroundColor Cyan
-Write-Host "  .\env\Scripts\Activate.ps1" -ForegroundColor Cyan
-Write-Host "  python app_main.py" -ForegroundColor Cyan
+if (Test-Path $EnvPath) {
+   
