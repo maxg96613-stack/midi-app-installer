@@ -100,64 +100,6 @@ class ConfigManager:
         except Exception:
             pass
 "@ | Set-Content (Join-Path $ProjectDir "core/config_manager.py")
-
-# ---------------- core/audio_to_midi.py ----------------
-@"
-from basic_pitch.inference import predict
-from basic_pitch import ICASSP_2022_MODEL_PATH
-from pathlib import Path
-
-
-class AudioToMidiConverter:
-    def __init__(self):
-        self.model_path = ICASSP_2022_MODEL_PATH
-
-    def convert(self, audio_path: str, output_path: str):
-        audio_path = Path(audio_path)
-        output_path = Path(output_path)
-
-        try:
-            _, midi_data, _ = predict(
-                audio_path,
-                model_or_model_path=self.model_path
-            )
-            midi_data.write(output_path)
-            return True, f"Saved MIDI to {output_path}"
-        except Exception as e:
-            return False, str(e)
-"@ | Set-Content (Join-Path $ProjectDir "core/audio_to_midi.py")
-
-# ---------------- core/text_to_midi.py ----------------
-@"
-from mido import Message, MidiFile, MidiTrack
-
-
-class TextToMidiConverter:
-    def convert(self, text: str, output_path: str):
-        mid = MidiFile()
-        track = MidiTrack()
-        mid.tracks.append(track)
-
-        try:
-            for line in text.strip().splitlines():
-                parts = [p.strip() for p in line.split(",")]
-                if len(parts) != 4:
-                    continue
-
-                note = int(parts[0])
-                duration = int(parts[1])
-                start = int(parts[2])
-                velocity = int(parts[3])
-
-                track.append(Message("note_on", note=note, velocity=velocity, time=start))
-                track.append(Message("note_off", note=note, velocity=0, time=duration))
-
-            mid.save(output_path)
-            return True, f"Saved MIDI to {output_path}"
-        except Exception as e:
-            return False, str(e)
-"@ | Set-Content (Join-Path $ProjectDir "core/text_to_midi.py")
-
 # ---------------- core/image_to_midi.py ----------------
 @"
 import pytesseract
@@ -391,13 +333,6 @@ class ConvertPage(ctk.CTkFrame):
         ok, msg = self.tools.transpose(src, dst, semitones=5)
         self.app_state.add_log(msg)
 "@ | Set-Content (Join-Path $ProjectDir "ui/convert_page.py")
-
-# ---------------- ui/tooltip.py ----------------
-@"
-class Tooltip:
-    pass
-"@ | Set-Content (Join-Path $ProjectDir "ui/tooltip.py")
-
 # ---------------- ui/main_window.py ----------------
 @"
 import customtkinter as ctk
@@ -515,4 +450,22 @@ Write-Host "Python files written." -ForegroundColor Green
 $EnvPath = Join-Path $ProjectDir "env"
 
 if (Test-Path $EnvPath) {
-   
+    Write-Host "Removing old virtual environment..." -ForegroundColor Yellow
+    Remove-Item $EnvPath -Recurse -Force
+}
+
+Write-Host "Creating virtual environment..." -ForegroundColor Green
+python -m venv $EnvPath
+
+Write-Host "Activating virtual environment..." -ForegroundColor Green
+& (Join-Path $EnvPath "Scripts\Activate.ps1")
+
+Write-Host "Installing dependencies (this may take a while)..." -ForegroundColor Green
+pip install --upgrade pip
+pip install customtkinter pillow cryptography==41.0.7 basic-pitch mido pytesseract
+
+Write-Host "FULL SETUP COMPLETE." -ForegroundColor Green
+Write-Host "To run the app:" -ForegroundColor Cyan
+Write-Host "  cd `"$ProjectDir`"" -ForegroundColor Cyan
+Write-Host "  .\env\Scripts\Activate.ps1" -ForegroundColor Cyan
+Write-Host "  python app_main.py" -ForegroundColor Cyan
